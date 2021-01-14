@@ -1,4 +1,4 @@
-package com._98point6.droptoken.model;
+package com.droptoken.model;
 
 import com.google.common.base.Preconditions;
 import java.util.Optional;

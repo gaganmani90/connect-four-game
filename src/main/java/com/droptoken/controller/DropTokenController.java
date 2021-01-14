@@ -1,6 +1,6 @@
-package com._98point6.droptoken.controller;
+package com.droptoken.controller;
 
-import com._98point6.droptoken.model.*;
+import com.droptoken.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,7 +48,7 @@ public class DropTokenController {
     @DeleteMapping("/{id}/{playerId}")
     public ResponseEntity<String> playerQuit(@PathVariable("id") String gameId, @PathVariable("playerId") String playerId) {
         log.info("gameId={}, playerId={}", gameId, playerId);
-        return new ResponseEntity<>("", HttpStatus.OK);
+        return new ResponseEntity<>("", HttpStatus.ACCEPTED);
     }
 
     @GetMapping("/{id}/moves")

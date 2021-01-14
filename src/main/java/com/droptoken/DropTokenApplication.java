@@ -1,4 +1,4 @@
-package com._98point6.droptoken;
+package com.droptoken;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.SpringApplication;
