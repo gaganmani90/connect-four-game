@@ -12,30 +12,8 @@ public class GetGamesResponse {
 
     public GetGamesResponse() {}
 
-    private GetGamesResponse(Builder builder) {
-        this.games = Preconditions.checkNotNull(builder.games);
+    public void addGame(String game) {
+        games.add(game);
     }
 
-    public List<String> getGames() {
-        return games;
-    }
-
-
-    public static class Builder {
-        private List<String> games;
-
-        public Builder games(List<String> games) {
-            this.games = games;
-            return this;
-        }
-
-        public Builder fromPrototype(GetGamesResponse prototype) {
-            games = prototype.games;
-            return this;
-        }
-
-        public GetGamesResponse build() {
-            return new GetGamesResponse(this);
-        }
-    }
 }

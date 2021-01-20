@@ -1,31 +1,40 @@
 package com.droptoken.controller;
 
+import com.droptoken.exception.ExceptionMessage;
+import com.droptoken.exception.InvalidGameException;
+import com.droptoken.exception.InvalidMoveException;
 import com.droptoken.model.*;
+import com.droptoken.repository.Game;
+import com.droptoken.repository.GameRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/drop_token/")
 @Slf4j
 public class DropTokenController {
 
+    @Autowired
+    GameRepository gameRepository;
+
     @GetMapping
-    public ResponseEntity<GetGamesResponse> getGames() {
-        return new ResponseEntity<>(new GetGamesResponse(), HttpStatus.OK);
+    public ResponseEntity<Object> getGames() {
+        return new ResponseEntity<>(gameRepository.getGames(), HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<String> createGame(@RequestBody CreateGameRequest request) {
-        if (request.getPlayers() == null || request.getPlayers().size() != 2) {
-            return new ResponseEntity<>("Only 2 players can participate", HttpStatus.BAD_REQUEST);
+    public ResponseEntity<Object> createGame(@RequestBody CreateGameRequest request) {
+        CreateGameResponse response = null;
+        try {
+            response = gameRepository.createGame(request);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
-        String gameId = UUID.randomUUID().toString();
-        CreateGameResponse response = new CreateGameResponse.Builder().gameId(gameId).build();
         return new ResponseEntity<>(response.toString(),
                 HttpStatus.CREATED);
     }
@@ -39,9 +48,19 @@ public class DropTokenController {
     }
 
     @PostMapping("/{id}/{playerId}")
-    public ResponseEntity<PostMoveResponse> postMove(@PathVariable("id") String gameId, @PathVariable("playerId") String playerId,
+    public ResponseEntity<Object> postMove(@PathVariable("id") String gameId, @PathVariable("playerId") String playerId,
                                                      @RequestBody PostMoveRequest request) {
         log.info("gameId={}, playerId={}, move={}", gameId, playerId, request);
+        Game game = gameRepository.getGames().get(gameId);
+        if (game == null) {
+            return new ResponseEntity<>(ExceptionMessage.INVALID_MOVE, HttpStatus.BAD_REQUEST);
+        }
+        try {
+            request.validate();
+            game.createMove(playerId, request.getColumn());
+        } catch (InvalidMoveException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
         return new ResponseEntity(new PostMoveResponse(), HttpStatus.OK);
     }
 
@@ -62,6 +81,6 @@ public class DropTokenController {
     @GetMapping("/{id}/moves/{moveId}")
     public ResponseEntity<GetMoveResponse> getMove(@PathVariable("id") String gameId, @PathVariable("moveId") Integer moveId) {
         log.info("gameId={}, moveId={}", gameId, moveId);
-        return new ResponseEntity(new GetMoveResponse(), HttpStatus.OK);
+        return new ResponseEntity(GetMoveResponse.builder().build(), HttpStatus.OK);
     }
 }
